@@ -24,7 +24,8 @@
           'longUrl': 'https://plus.google.com/116572842600062174988'
         });
         request.then(function(response) {
-          appendResults(response.result.shortUrl);
+          console.log(response.result);
+          appendResults(response.result.id);//shortUrl --> id
         }, function(reason) {
           console.log('Error: ' + reason.result.error.message);
         });
