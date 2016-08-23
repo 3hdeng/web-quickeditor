@@ -1,0 +1,75 @@
+<html>
+
+<head>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script>
+    var apiKey = 'YOUR_API_KEY';
+    var clientId = '333823756477-eg0lbp0qnbjq31m438lokfc9jhq2m6pu.apps.googleusercontent.com';
+    var scopes = ['https://www.googleapis.com/auth/urlshortener']; //'profile',
+
+    function hide(elem) {
+      //var signinButton = document.getElementById('signin-button');
+      if (elem) elem.style.visibility = 'hidden';
+    }
+
+    function show(elem) {
+      if (elem) {
+        elem.style.visibility = 'visible';
+        elem.disabled = false;
+      }
+    }
+
+    function disableButton() {
+      document.getElementById('signin-button').disabled = true;
+    }
+
+    // Get authorization from the user to access profile info
+    function initAuth() {
+      //gapi.client.setApiKey(apiKey);
+      gapi.auth2.init({
+        client_id: clientId,
+        scope: scopes
+      });
+      var signinButton = document.getElementById('signin-button');
+      signinButton.addEventListener("click", clickAction);
+      show(signinButton);
+    }
+    //===
+    function setSpanText(t) {
+      var span = document.getElementById('myspan');
+      if ('textContent' in span) {
+        span.textContent = t;
+      }
+      else {
+        span.innerText = t;
+      }
+    }
+
+    function makeApiCall() {
+      var request = gapi.client.urlshortener.url.insert({
+        'longUrl': 'https://docs.google.com/forms/d/1q39NWEvnOjlttwkWp6jQSCtxYGVYDdnCKrKVgx6Ntbg/edit?usp=drive_web'
+      });
+      request.then(function(response) {
+        console.log(response.result);
+        setSpanText(response.result.id); //shortUrl --> id
+      }, function(reason) {
+        console.log('Error: ' + reason.result.error.message);
+      });
+    }
+    //===
+    function clickAction() {
+      gapi.auth2.getAuthInstance().signIn().then(function() {
+        makeApiCall();
+      });
+    }
+
+    gapi.load('client:auth2', initAuth);
+  </script>
+</head>
+
+<body onload="disableButton()">
+  <button id="signin-button">Sign in</button>
+  <div><span id='myspan'></span></div>
+</body>
+
+</html>
