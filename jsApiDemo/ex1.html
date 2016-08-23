@@ -1,0 +1,49 @@
+<html>
+  <head>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+      function appendResults(text) {
+        var results = document.getElementById('results');
+        results.appendChild(document.createElement('P'));
+        results.appendChild(document.createTextNode(text));
+      }
+
+      function getRequest() {
+        var request = gapi.client.urlshortener.url.get({
+          'shortUrl': 'http://goo.gl/fbsS'
+        });
+        request.then(function(response) {
+          appendResults(response.result.longUrl);
+        }, function(reason) {
+          console.log('Error: ' + reason.result.error.message);
+        });
+      }
+      
+      function postRequest() {
+        var request = gapi.client.urlshortener.url.insert({
+          'longUrl': 'https://plus.google.com/116572842600062174988'
+        });
+        request.then(function(response) {
+          appendResults(response.result.shortUrl);
+        }, function(reason) {
+          console.log('Error: ' + reason.result.error.message);
+        });
+      }
+
+      function init() {
+        gapi.client.setApiKey('AIzaSyDhhFYhrna8h06HC3O9n1R02rRb0P9Lyfs');
+        gapi.client.load('urlshortener', 'v1').then(postRequest);
+      }
+
+      gapi.load('client', init);
+    </script>
+  </head>
+  <body>
+    <div><p>first, enable urlshortener api on developer console, API manager Dashboard;
+    then create credentials -- dropdown -- API key
+    </p>
+    </div>
+    
+    <div id="results"></div>
+  </body>
+</html>
