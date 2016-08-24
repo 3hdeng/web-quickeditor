@@ -60,9 +60,9 @@
         req.then(function(resp) {
           console.log(resp.result);
           setSpanText(resp.result.totalItems);
-          document.getElementById('myresult').appendChild(
-            document.createElement(toHtmlUL(resp.result.items))
-            );
+          var ul=document.createElement('div');
+          ul.innerHTML=toHtmlLi(resp.result.items);
+          document.getElementById('myresult').appendChild(ul);
         }, function(reason) {
           console.log('Error: ' + reason.result.error.message);
         });

@@ -45,8 +45,11 @@ const ULb = '<ul>';
 const ULe = '</ul>';
 
 function toHtmlLi(obj, kori) {
-  kori = kori || '';
-  var myLIb = LIb + kori;
+  //kori = kori || '';
+  kori = (typeof kori === 'undefined') ? '' : kori;
+  console.log("kori= " + kori);
+  try{
+  var myLIb = LIb + kori + " : ";
   switch (typeof obj) {
     /*case "string":
       return myLIb + obj + LIe;
@@ -61,6 +64,7 @@ function toHtmlLi(obj, kori) {
           s += toHtmlLi(obj[i], i);
         }
         s += ULe + LIe;
+        return s;
       }
       else {
         var s = myLIb + ' _object :' + ULb;
@@ -75,6 +79,9 @@ function toHtmlLi(obj, kori) {
       break;
     default:
       return myLIb + obj + LIe;
+  }
+  }catch(err){
+    console.log(err.message);
   }
 }
 
