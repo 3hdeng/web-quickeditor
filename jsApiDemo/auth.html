@@ -1,11 +1,12 @@
 <html>
 
 <head>
+  <script src="myfunctions.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
   <script>
     var apiKey = 'YOUR_API_KEY';
     var clientId = '333823756477-eg0lbp0qnbjq31m438lokfc9jhq2m6pu.apps.googleusercontent.com';
-    var scopes = ['https://www.googleapis.com/auth/urlshortener']; //'profile',
+    var scopes = 'https://www.googleapis.com/auth/urlshortener'; //'profile',
 
     function hide(elem) {
       //var signinButton = document.getElementById('signin-button');
@@ -15,14 +16,17 @@
     function show(elem) {
       if (elem) {
         elem.style.visibility = 'visible';
-        elem.disabled = false;
+        //elem.disabled = false;
       }
+    }
+
+    function enableButton() {
+      document.getElementById('signin-button').disabled = false;
     }
 
     function disableButton() {
       document.getElementById('signin-button').disabled = true;
     }
-
     // Get authorization from the user to access profile info
     function initAuth() {
       //gapi.client.setApiKey(apiKey);
@@ -32,7 +36,7 @@
       });
       var signinButton = document.getElementById('signin-button');
       signinButton.addEventListener("click", clickAction);
-      show(signinButton);
+      //show(signinButton);
     }
     //===
     function setSpanText(t) {
@@ -44,16 +48,38 @@
         span.innerText = t;
       }
     }
+    function toHtmlList(o){
+      
+    }
 
     function makeApiCall() {
-      var request = gapi.client.urlshortener.url.insert({
-        'longUrl': 'https://docs.google.com/forms/d/1q39NWEvnOjlttwkWp6jQSCtxYGVYDdnCKrKVgx6Ntbg/edit?usp=drive_web'
+      gapi.client.load('urlshortener', 'v1', function() {
+        var req = gapi.client.urlshortener.url.list({
+        }); //       'start-token': '1'
+        
+        req.then(function(resp) {
+          console.log(resp.result);
+          setSpanText(resp.result.totalItems);
+          document.getElementById('myresult').appendChild(
+            document.createElement(toHtmlUL(resp.result.items))
+            );
+        }, function(reason) {
+          console.log('Error: ' + reason.result.error.message);
+        });
       });
-      request.then(function(response) {
-        console.log(response.result);
-        setSpanText(response.result.id); //shortUrl --> id
-      }, function(reason) {
-        console.log('Error: ' + reason.result.error.message);
+    }
+
+    function createShortUrl() {
+      gapi.client.load('urlshortener', 'v1', function() {
+        var request = gapi.client.urlshortener.url.insert({
+          'longUrl': 'https://docs.google.com/forms/d/1q39NWEvnOjlttwkWp6jQSCtxYGVYDdnCKrKVgx6Ntbg/edit?usp=drive_web'
+        });
+        request.then(function(response) {
+          console.log(response.result);
+          setSpanText(response.result.id); //shortUrl --> id
+        }, function(reason) {
+          console.log('Error: ' + reason.result.error.message);
+        });
       });
     }
     //===
@@ -67,9 +93,9 @@
   </script>
 </head>
 
-<body onload="disableButton()">
+<body onload="enableButton()">
   <button id="signin-button">Sign in</button>
-  <div><span id='myspan'></span></div>
+  <div id='myresult'><span id='myspan'></span></div>
 </body>
 
 </html>
