@@ -6,7 +6,7 @@
   <script>
     var apiKey = 'YOUR_API_KEY';
     var clientId = '333823756477-eg0lbp0qnbjq31m438lokfc9jhq2m6pu.apps.googleusercontent.com';
-    var scopes = 'https://www.googleapis.com/auth/urlshortener'; //'profile',
+    var scopes = 'profile https://www.googleapis.com/auth/urlshortener'; //'profile',
 
     function hide(elem) {
       //var signinButton = document.getElementById('signin-button');
@@ -48,11 +48,28 @@
         span.innerText = t;
       }
     }
-    function toHtmlList(o){
-      
-    }
-
+    
+    function getProfile() {
+      //https://developers.google.com/people/ , no need of google+ api
+      //===> need google people API enabled
+        gapi.client.load('people', 'v1', function() {
+          var request = gapi.client.people.people.get({
+            resourceName: 'people/me'
+          });
+          request.execute(function(resp) {
+            console.log(resp);
+            
+            var ul = document.createElement('ul');
+            ul.innerHTML=toHtmlLi(resp.names);
+            document.getElementById('myresult').appendChild(ul);
+          });
+        });
+    }   
+        
     function makeApiCall() {
+      getProfile();
+    }
+    function getShortenedUrls() {
       gapi.client.load('urlshortener', 'v1', function() {
         var req = gapi.client.urlshortener.url.list({
         }); //       'start-token': '1'
