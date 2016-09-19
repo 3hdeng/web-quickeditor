@@ -77,7 +77,8 @@
           for (var i = 0; i < files.length; i++) {
             var file = files[i];
             appendPre(file.name + ' (' + file.id + ')');
-            arr.push(file.name + "," + file.id);
+            arr.push(file.name + "," + file.id); // + "," + file.mimeType);
+            //console.log(file); list file has only two properties : id, name
           }
           append2(makeUL(arr));
         }
@@ -104,12 +105,39 @@
       op2.appendChild(elem);
     }
 
-    function getEventTarget(e) { e = e || window.event; return e.target || e.srcElement; }
-    
+    function getEventTarget(e) {
+      e = e || window.event;
+      return e.target || e.srcElement;
+    }
+
     function makeUL(array) {
       // Create the list element:
       var list = document.createElement('ul');
-      list.onclick=function(event) { var target = getEventTarget(event); alert(target.innerHTML); };
+      list.onclick = function(event) {
+        var target = getEventTarget(event);
+        alert(target.innerHTML);
+        var tmparr = target.innerHTML.split(",");
+        if (tmparr.length >= 2) {
+          var destfname = tmparr[0];
+          var fid = tmparr[1];
+          //var mimetype= tmparr[2];
+          //var mimetype = "application/octet-stream";
+          
+          console.log('clicked fid=' + fid);
+          //getFileInfo(fid);
+          var request = gapi.client.drive.files.get({
+            'fileId': fid,
+            'alt': 'media'
+          });
+          request.then(function(resp) {
+            console.log(resp);
+            var mimetype=resp.headers['content-type'];
+            return mydnload(destfname, resp.body, mimetype)
+          });
+
+        }
+
+      };
       for (var i = 0; i < array.length; i++) {
         // Create the list item:
         var item = document.createElement('li');
@@ -125,10 +153,27 @@
       return list;
     }
     //============================
+    function str2ab(s) {
+      //var s = encode_utf8(str)
+      var buf = new ArrayBuffer(s.length);
+      var bufView = new Uint8Array(buf);
+      for (var i = 0, strLen = s.length; i < strLen; i++) {
+        bufView[i] = s.charCodeAt(i);
+      }
+      return bufView;
+    }
+
     function mydnload(destfname, srcdata, mimetype) {
-      var blob = new Blob([srcdata], {
+      console.log(destfname);
+      console.log(typeof(srcdata));
+      console.log('mimetype= ' + mimetype);
+
+      var blob = new Blob([str2ab(srcdata)], {
         type: mimetype
-      }); //'text/csv'
+      }); //'text/csv' //+ ";charset=utf-8;"
+      //type: "text/plain;charset=UTF-8"
+
+      //xx var blob=srcdata;
 
       if (window.navigator.msSaveOrOpenBlob) {
         window.navigator.msSaveBlob(blob, destfname);
@@ -142,8 +187,49 @@
         document.body.removeChild(elem);
       }
     }
+
+    //=== https://developers.google.com/drive/v2/reference/files/get
+    //--> v3 ?
+    function getFileInfo(fileId) {
+      var request = gapi.client.drive.files.get({
+        'fileId': fileId,
+        'alt': 'media'
+      });
+      request.execute(function(resp) {
+        /*console.log('Title: ' + resp.title);
+        console.log('Description: ' + resp.description);
+        console.log('MIME type: ' + resp.mimeType);
+        console.log('downloadUrl: ' + resp.downloadUrl);
+        */
+        console.log(resp);
+      });
+    }
+
+    function gdriveDnload_v2(file, callback) {
+      if (file.downloadUrl) {
+        var accessToken = gapi.auth.getToken().access_token;
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', file.downloadUrl);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        xhr.onload = function() {
+          callback(xhr.responseText);
+        };
+        xhr.onerror = function() {
+          callback(null);
+        };
+        xhr.send();
+      }
+      else {
+        callback(null);
+      }
+    }
+
     //============= https://developers.google.com/drive/v2/reference/files/get
     function gdriveDnload(file) {
+      console.log('gdriveDnload called , fid= ' + file.id);
+      console.log(file);
+      console.log(file.downloadUrl);
+
       if (file.downloadUrl) {
         var accessToken = gapi.auth.getToken().access_token;
         var xhr = new XMLHttpRequest();
@@ -164,11 +250,7 @@
 
     }
 
-    var request = gapi.client.drive.files.get({
-      'fileId': fid
-    });
 
-    request.then(gdriveDnload);
 
     //=================
   </script>
